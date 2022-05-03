@@ -32,3 +32,11 @@ The training set (15120 observations) contains both features and the Cover_Type.
 * Wilderness_Area (4 binary columns, 0 = absence or 1 = presence) - Wilderness area designation
 * Soil_Type (40 binary columns, 0 = absence or 1 = presence) - Soil Type designation
 * Cover_Type (7 types, integers 1 to 7) - Forest Cover Type designation
+
+Для организации command line interface (CLI) использована библиотека click, которая обладает рядом преимуществ:
+* Автоматическое создание справки по параметрам командной строки.
+* Поддерживает отложенную загрузку подкоманд во время выполнения.
+* Меньшее количество кода по сравнению с argparse.
+* argparse имеет встроенное поведение, которое пытается угадать, является ли что-то параметром или опцией. Такое поведение становится непредсказуемым при работе со сценариями, в которых не используется часть опций и/или параметров.
+* argparse не поддерживает отключение перемежающихся аргументов. Без этой функции невозможно безопасно реализовать вложенный синтаксический анализ, например как в click.
+
