@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Tuple
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import click
 
 
 def get_datasets(
@@ -9,7 +10,7 @@ def get_datasets(
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     
     dataset = pd.read_csv(csv_path)
-    print(f"Common Dataset shape is: {dataset.shape}.")
+    click.echo(f"Common Dataset shape is: {dataset.shape}.")
     features = dataset.drop("Cover_Type", axis=1)
     target = dataset["Cover_Type"]
     
@@ -21,8 +22,8 @@ def get_datasets(
             random_state=random_state
         )
 
-    print(f"Train Dataset shape is: {features_train.shape}.")
-    print(f"Validate Dataset shape is: {features_val.shape}.")
+    click.echo(f"Train Dataset shape is: {features_train.shape}.")
+    click.echo(f"Validate Dataset shape is: {features_val.shape}.")
     
     return features_train, features_val, target_train, target_val
 
