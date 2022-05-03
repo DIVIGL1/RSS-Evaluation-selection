@@ -18,3 +18,5 @@ mlruns
 *.csv
 *.sqlite
 *.xls*
+
+*.pyc
