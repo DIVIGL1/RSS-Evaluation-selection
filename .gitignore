@@ -1,13 +1,18 @@
+# We ignore files and directories
+# with settings that are not directly
+# related to the project:
 .vscode/*
-.ipynb_checkpoints/*
 .env_*
 __pycache__/*.*
-*/.ipynb_checkpoints/*
 
+# Ignore temporary files
 ~_tmp_*.*
 _tmp_*.*
 _local_*.*
 
+# Ignore the data directory and single data files:
+data
+mlruns
 *.spec
 *.pkl
 *.csv
