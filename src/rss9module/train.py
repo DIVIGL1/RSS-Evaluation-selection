@@ -95,7 +95,7 @@ def train(
 
 def compute_model(**params):
     # Получим набор данных
-    x_train, _, y_train, _ = \
+    x_train, y_train = \
         get_datasets(
             dataset_path=params["dataset_path"],
             fe_type=params["fe_type"]
@@ -126,13 +126,13 @@ def compute_model(**params):
     # В словаре params остались только те параметры,
     # которые нужны для той или иной модели ML:
     model = create_pipeline(model, use_scaler, random_state, **params)
-    
+
     model.fit(x_train, y_train)
 
     # Список названий оценок, которые будем вычислять:
     scores_list = [
-        "r2",
-        # "accuracy",
+        # "r2",
+        "accuracy",
         # "homogeneity_score",
         # "neg_mean_absolute_error",
         # "f1_macro",
