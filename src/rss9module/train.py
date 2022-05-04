@@ -26,6 +26,8 @@ from .pipeline import create_pipeline
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
     show_default=True,
 )
+@click.option("--model", default="rfc", type=str, show_default=True)
+@click.option("--fe-type", default=0, type=int, show_default=True)
 @click.option("--random-state", default=42, type=int, show_default=True)
 @click.option("--test-size", default=0.2, type=float, show_default=True)
 @click.option("--use-scaler", default=True, type=bool, show_default=True)
@@ -36,6 +38,8 @@ from .pipeline import create_pipeline
 def train(
     dataset_path: Path,
     save_model_path: Path,
+    model: str,
+    fe_type: int,
     random_state: int,
     test_size: float,
     use_scaler: bool,
@@ -49,6 +53,8 @@ def train(
     compute_model(
         dataset_path=dataset_path,
         save_model_path=save_model_path,
+        model=model,
+        fe_type=fe_type,
         random_state=random_state,
         test_size=test_size,
         use_scaler=use_scaler,
@@ -62,6 +68,8 @@ def train(
 def compute_model(
     dataset_path: Path = Path("data/train.csv"),
     save_model_path: Path = Path("data/unknown_model.joblib"),
+    model: str = "rfc",
+    fe_type: int = 0,
     random_state: int = 42,
     test_size: float = 0.0,
     use_scaler: bool = True,
@@ -72,7 +80,10 @@ def compute_model(
 ):
     # Получим набор данных
     # (если передадит test_size=0.0, то разбиения не будет):
-    x_train, _, y_train, _ = get_datasets(dataset_path)
+    x_train, _, y_train, _ = \
+        get_datasets(
+            dataset_path, model=model, fe_type=fe_type
+        )
     # Соберём параметры для передачи в функцию:
     params = {
         "random_state": random_state,
@@ -92,8 +103,6 @@ def compute_model(
 
     # Запустим процедуры в соответствии с pipeline:
     model = create_pipeline(**params)
- #   mlflow.sklearn.log_model(model, "title_models")
-    mlflow.runName = "Test"
     model.fit(x_train, y_train)
 
     # Список названий оценок:
@@ -103,7 +112,6 @@ def compute_model(
         "homogeneity_score",
         "neg_mean_absolute_error",
         "f1_macro",
-        "roc_auc_ovr",
     ]
 
     # вычислим разные метрики по результатам cross_val_score
