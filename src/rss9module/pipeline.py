@@ -1,14 +1,15 @@
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 def create_pipeline(
-    random_state: int = 42,
+    model: str = "rfc",
     use_scaler: bool = True,
-    n_estimators: int = 100,
-    criterion: str = "gini",
-    max_depth: int = None,
-    max_features: str = "auto",
+    random_state: int = 42,
+    **params,
 ) -> Pipeline:
 
     pipeline_steps = []
@@ -16,14 +17,20 @@ def create_pipeline(
         step = ("scaler", StandardScaler())
         pipeline_steps.append(step)
 
-    params = {
-        "n_estimators": n_estimators,
-        "criterion": criterion,
-        "max_depth": max_depth,
-        "max_features": max_features,
-        "random_state": random_state,
-    }
-    step = ("rfc", RandomForestClassifier(**params))
+    if model == "rfc":
+        step = (
+            "rfc",
+            RandomForestClassifier(
+                n_jobs=-1,
+                random_state=random_state,
+                **params
+            )
+        )
+    elif model == "knn":
+        step = ("knn", KNeighborsClassifier(n_jobs=-1, **params))
+    elif model == "svc":
+        step = ("svc", SVC(random_state=random_state, **params))
+
     pipeline_steps.append(step)
 
     return Pipeline(steps=pipeline_steps)

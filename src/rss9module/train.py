@@ -29,89 +29,113 @@ from .pipeline import create_pipeline
 @click.option("--model", default="rfc", type=str, show_default=True)
 @click.option("--fe-type", default=0, type=int, show_default=True)
 @click.option("--random-state", default=42, type=int, show_default=True)
-@click.option("--test-size", default=0.2, type=float, show_default=True)
 @click.option("--use-scaler", default=True, type=bool, show_default=True)
-@click.option("--n-estimators", default=100, type=int, show_default=True)
-@click.option("--criterion", default="gini", type=str, show_default=True)
+@click.option("--n-estimators", default=None, type=int, show_default=True)
+@click.option("--criterion", default=None, type=str, show_default=True)
 @click.option("--max-depth", default=None, type=int, show_default=True)
-@click.option("--max-features", default="auto", type=str, show_default=True)
+@click.option("--max-features", default=None, type=str, show_default=True)
+@click.option("--n-neighbors", default=None, type=int, show_default=True)
+@click.option("--weights", default=None, type=str, show_default=True)
+@click.option("--algorithm", default=None, type=str, show_default=True)
+@click.option("--c-param", default=None, type=int, show_default=True)
+@click.option("--kernel", default=None, type=str, show_default=True)
+@click.option("--shrinking", default=None, type=bool, show_default=True)
+@click.option("--tol", default=None, type=float, show_default=True)
 def train(
     dataset_path: Path,
     save_model_path: Path,
     model: str,
     fe_type: int,
     random_state: int,
-    test_size: float,
     use_scaler: bool,
     n_estimators: int,
     criterion: str,
     max_depth: int,
-    max_features: str
+    max_features: str,
+    n_neighbors: int,
+    weights: str,
+    algorithm: str,
+    c_param: str,
+    kernel: str,
+    shrinking: bool,
+    tol: float,
 ) -> None:
 
-    mlflow.start_run(run_name="rfc+cv")
-    compute_model(
-        dataset_path=dataset_path,
-        save_model_path=save_model_path,
-        model=model,
-        fe_type=fe_type,
-        random_state=random_state,
-        test_size=test_size,
-        use_scaler=use_scaler,
-        n_estimators=n_estimators,
-        criterion=criterion,
-        max_depth=max_depth,
-        max_features=max_features
-    )
-    mlflow.end_run()
+    runname = model + ": fe=" + str(fe_type)
+    print(runname)
+    mlflow.start_run(run_name=runname)
 
-def compute_model(
-    dataset_path: Path = Path("data/train.csv"),
-    save_model_path: Path = Path("data/unknown_model.joblib"),
-    model: str = "rfc",
-    fe_type: int = 0,
-    random_state: int = 42,
-    test_size: float = 0.0,
-    use_scaler: bool = True,
-    n_estimators: int = 100,
-    criterion: str = "gini",
-    max_depth: int = None,
-    max_features: str = "auto"
-):
-    # Получим набор данных
-    # (если передадит test_size=0.0, то разбиения не будет):
-    x_train, _, y_train, _ = \
-        get_datasets(
-            dataset_path, model=model, fe_type=fe_type
-        )
-    # Соберём параметры для передачи в функцию:
+    # Соберём параметры в словарь:
     params = {
+        "dataset_path": dataset_path,
+        "save_model_path": save_model_path,
+        "model": model,
+        "fe_type": fe_type,
         "random_state": random_state,
         "use_scaler": use_scaler,
         "n_estimators": n_estimators,
         "criterion": criterion,
         "max_depth": max_depth,
         "max_features": max_features,
+        "n_neighbors": n_neighbors,
+        "weights": weights,
+        "algorithm": algorithm,
+        "C": c_param,
+        "kernel": kernel,
+        "shrinking": shrinking,
+        "tol": tol,
     }
-    # Запишем данные в MLFlow:
-    mlflow.log_param("random_state", random_state)
-    mlflow.log_param("use_scaler", use_scaler)
-    mlflow.log_param("n_estimators", n_estimators)
-    mlflow.log_param("criterion", criterion)
-    mlflow.log_param("max_depth", max_depth)
-    mlflow.log_param("max_features", max_features)
+    # Исключим из словаря не переданные значения (те кто = None):
+    for key in list(params.keys()):
+        if params[key] is None:
+            params.pop(key)
+    # Передадим их в качетве параметров
+    compute_model(**params)
+    mlflow.end_run()
 
-    # Запустим процедуры в соответствии с pipeline:
-    model = create_pipeline(**params)
+def compute_model(**params):
+    # Получим набор данных
+    x_train, _, y_train, _ = \
+        get_datasets(
+            dataset_path=params["dataset_path"],
+            fe_type=params["fe_type"]
+        )
+    # Обработаем словарь с параметрами для дальнейшего обмена:
+    save_model_path = params["save_model_path"]
+    use_scaler = params["use_scaler"]
+    random_state = params["random_state"]
+    model = params["model"]
+    params.pop("dataset_path")
+    params.pop("fe_type")
+    params.pop("save_model_path")
+    params.pop("use_scaler")
+    params.pop("random_state")
+    params.pop("model")
+
+    # Запишем все пароаметры модели в MLFlow:
+    # 1. все вместе (будут видны в одном столбце):
+    if len(params) == 0:
+        mlflow.log_param("_all_params", "-")
+    else:
+        mlflow.log_param("_all_params", params)
+    # 2. по одному (будут видны каждый в своём столбце):
+    for key in list(params.keys()):
+        mlflow.log_param(key.lower(), params[key])
+
+    # Запустим процедуры в соответствии с pipeline.
+    # В словаре params остались только те параметры,
+    # которые нужны для той или иной модели ML:
+    model = create_pipeline(model, use_scaler, random_state, **params)
+    
     model.fit(x_train, y_train)
 
-    # Список названий оценок:
+    # Список названий оценок, которые будем вычислять:
     scores_list = [
         "r2",
-        "accuracy",
-        "homogeneity_score",
-        "neg_mean_absolute_error",
-        "f1_macro",
+        # "accuracy",
+        # "homogeneity_score",
+        # "neg_mean_absolute_error",
+        # "f1_macro",
     ]
 
     # вычислим разные метрики по результатам cross_val_score
@@ -119,7 +143,7 @@ def compute_model(
     cv = KFold(n_splits=10, random_state=random_state, shuffle=True)
 
     print("---------------------------------------------")
-    print("Значение расчитанных метрик:")
+    print("Значение расcчитанных метрик:")
     for one_score in scores_list:
         scores = cross_val_score(
             model,
