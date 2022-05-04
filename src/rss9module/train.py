@@ -44,6 +44,8 @@ def train(
     max_depth: int,
     max_features: str
 ) -> None:
+
+    mlflow.start_run(run_name="rfc+cv")
     compute_model(
         dataset_path=dataset_path,
         save_model_path=save_model_path,
@@ -55,6 +57,7 @@ def train(
         max_depth=max_depth,
         max_features=max_features
     )
+    mlflow.end_run()
 
 def compute_model(
     dataset_path: Path = Path("data/train.csv"),
@@ -70,7 +73,6 @@ def compute_model(
     # Получим набор данных
     # (если передадит test_size=0.0, то разбиения не будет):
     x_train, _, y_train, _ = get_datasets(dataset_path)
-#     with mlflow.start_run():
     # Соберём параметры для передачи в функцию:
     params = {
         "random_state": random_state,
@@ -90,6 +92,8 @@ def compute_model(
 
     # Запустим процедуры в соответствии с pipeline:
     model = create_pipeline(**params)
+ #   mlflow.sklearn.log_model(model, "title_models")
+    mlflow.runName = "Test"
     model.fit(x_train, y_train)
 
     # Список названий оценок:
@@ -110,7 +114,12 @@ def compute_model(
     print("Значение расчитанных метрик:")
     for one_score in scores_list:
         scores = cross_val_score(
-            model, x_train, y_train, scoring=one_score, cv=cv, n_jobs=-1
+            model,
+            x_train,
+            y_train,
+            scoring=one_score,
+            cv=cv,
+            n_jobs=-1
         )
         print_and_save_result(one_score, round(mean(scores), 4))
     print("---------------------------------------------")
