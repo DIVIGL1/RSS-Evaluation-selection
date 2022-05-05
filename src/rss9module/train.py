@@ -115,7 +115,7 @@ def compute_model(**params):
     # Запишем все пароаметры модели в MLFlow:
     # 1. все вместе (будут видны в одном столбце):
     if len(params) == 0:
-        mlflow.log_param("_all_params", "-")
+        mlflow.log_param("_all_params", "all default")
     else:
         mlflow.log_param("_all_params", params)
     # 2. по одному (будут видны каждый в своём столбце):
@@ -131,11 +131,10 @@ def compute_model(**params):
 
     # Список названий оценок, которые будем вычислять:
     scores_list = [
-        # "r2",
+        "r2",
         "accuracy",
-        # "homogeneity_score",
-        # "neg_mean_absolute_error",
-        # "f1_macro",
+        "homogeneity_score",
+        "neg_mean_absolute_error",
     ]
 
     # вычислим разные метрики по результатам cross_val_score
