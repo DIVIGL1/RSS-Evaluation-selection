@@ -8,50 +8,47 @@ import pandas as pd
 def get_datasets(
     dataset_path: Path = Path("data/train.csv"),
     fe_type: int = 0,
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+    test_data: bool = False
+) -> Tuple[pd.DataFrame, pd.Series]:
 
     dataset = pd.read_csv(dataset_path)
+    if test_data:
+        print("---------------------")
+        print("TEST DATA PREPORATION")
+        print("---------------------")
+        dataset["Cover_Type"] = 0
+        x_id = dataset["Id"].copy(deep=True)
+
     dataset.drop("Id", axis=1, inplace=True)
+
     print(f"Original dataset size: {dataset.shape}.")
     if fe_type == 0:
         print(
-'''
-No feature engineering techniques.
-    (Used original data)
-'''
+            "No feature engineering techniques (Used original data)."
         )
     else:
         if fe_type == 1:
             print(
-'''
-Feature engineering techniques type 1.
-    (Added degrees (2-4) and new columns)
-'''
+                "Feature engineering techniques type 1",
+                "(Added degrees (2-4) and new columns)."
             )
             fe_by_hans(dataset, degree=4)
 
         elif fe_type == 2:
             print(
-'''
-Feature engineering techniques type 2.
-    (Used original data and PCA with n_components=50)
-'''
+                "Feature engineering techniques type 2",
+                "(Used original data and PCA with n_components=50)."
             )
             target = dataset["Cover_Type"]
             dataset.drop("Cover_Type", inplace=True, axis=1)
 
             dataset = pca_df(dataset, n_components=50)
 
-            print(f"Dataset size after fe: {dataset.shape}.")
-            return (dataset, target)
-
         elif fe_type == 3:
             print(
-'''
-Feature engineering techniques type 3.
-    (Added degrees (2-3) and new columns
-    and used PCA with n_components=50)
-'''
+                "Feature engineering techniques type 3",
+                "(Added degrees (2-3) and new columns",
+                "and used PCA with n_components=50)."
             )
             fe_by_hans(dataset, degree=3, nodrop=True)
 
@@ -60,15 +57,15 @@ Feature engineering techniques type 3.
 
             dataset = pca_df(dataset, n_components=50)
 
-            print(f"Dataset size after fe: {dataset.shape}.")
-            return (dataset, target)
-
         print(f"Dataset size after fe: {dataset.shape}.")
 
-    features = dataset.drop("Cover_Type", axis=1)
-    target = dataset["Cover_Type"]
+    if fe_type in [2, 3]:
+        features = dataset
+    else:
+        features = dataset.drop("Cover_Type", axis=1)
+        target = dataset["Cover_Type"]
 
-    return (features, target)
+    return (features, (target if not test_data else x_id))
 
 def pca_df(dataset: pd.DataFrame, n_components=2) -> None:
     pca = PCA(
@@ -78,7 +75,7 @@ def pca_df(dataset: pd.DataFrame, n_components=2) -> None:
     ).fit(dataset)
     dataset = pd.DataFrame(pca.transform(dataset))
     return (dataset)
-    
+
 def fe_by_hans(dataset: pd.DataFrame, degree=4, nodrop=False) -> None:
     columns = [
         "Elevation",
@@ -102,7 +99,6 @@ def fe_by_hans(dataset: pd.DataFrame, degree=4, nodrop=False) -> None:
         dataset["Soil_Type_sum"] += 2 ** dataset[colname]
         if not nodrop:
             dataset.drop(colname, inplace=True, axis=1)
-    
 
 if __name__ == '__main__':
     data = get_datasets(Path("data/train.csv"), 42, 0.2)

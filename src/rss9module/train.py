@@ -6,6 +6,7 @@ import mlflow.sklearn
 from joblib import dump
 from numpy import mean
 from sklearn.model_selection import KFold, cross_val_score
+import pandas as pd
 
 from .data import get_datasets
 from .pipeline import create_pipeline
@@ -20,12 +21,27 @@ from .pipeline import create_pipeline
     show_default=True,
 )
 @click.option(
+    "-t",
+    "--test-data-path",
+    default="data/test.csv",
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+    show_default=True,
+)
+@click.option(
+    "-p",
+    "--predicted-data-path",
+    default="data/submission.csv",
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+    show_default=True,
+)
+@click.option(
     "-s",
     "--save-model-path",
     default="data/unknown_model.joblib",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
     show_default=True,
 )
+@click.option("--do-prediction", default=False, type=bool, show_default=True)
 @click.option("--model", default="rfc", type=str, show_default=True)
 @click.option("--fe-type", default=0, type=int, show_default=True)
 @click.option("--random-state", default=42, type=int, show_default=True)
@@ -43,7 +59,10 @@ from .pipeline import create_pipeline
 @click.option("--tol", default=None, type=float, show_default=True)
 def train(
     dataset_path: Path,
+    test_data_path: Path,
+    predicted_data_path: Path,
     save_model_path: Path,
+    do_prediction: bool,
     model: str,
     fe_type: int,
     random_state: int,
@@ -67,12 +86,6 @@ def train(
 
     # Соберём параметры в словарь:
     params = {
-        "dataset_path": dataset_path,
-        "save_model_path": save_model_path,
-        "model": model,
-        "fe_type": fe_type,
-        "random_state": random_state,
-        "use_scaler": use_scaler,
         "n_estimators": n_estimators,
         "criterion": criterion,
         "max_depth": max_depth,
@@ -90,29 +103,39 @@ def train(
         if params[key] is None:
             params.pop(key)
     # Передадим их в качетве параметров
-    compute_model(**params)
+    compute_model(
+        dataset_path,
+        test_data_path,
+        predicted_data_path,
+        save_model_path,
+        do_prediction,
+        model,
+        fe_type,
+        random_state,
+        use_scaler,
+        **params
+    )
     mlflow.end_run()
 
-def compute_model(**params):
-    # Получим набор данных
+def compute_model(
+    dataset_path,
+    test_data_path,
+    predicted_data_path,
+    save_model_path,
+    do_prediction,
+    model,
+    fe_type,
+    random_state,
+    use_scaler,
+    **params
+) -> None:
+    # Получим тренировочный набор данных
     x_train, y_train = \
         get_datasets(
-            dataset_path=params["dataset_path"],
-            fe_type=params["fe_type"]
+            dataset_path=dataset_path,
+            fe_type=fe_type
         )
-    # Обработаем словарь с параметрами для дальнейшего обмена:
-    save_model_path = params["save_model_path"]
-    use_scaler = params["use_scaler"]
-    random_state = params["random_state"]
-    model = params["model"]
-    params.pop("dataset_path")
-    params.pop("fe_type")
-    params.pop("save_model_path")
-    params.pop("use_scaler")
-    params.pop("random_state")
-    params.pop("model")
-
-    # Запишем все пароаметры модели в MLFlow:
+    # Запишем все параметры модели в MLFlow:
     # 1. все вместе (будут видны в одном столбце):
     if len(params) == 0:
         mlflow.log_param("_all_params", "all default")
@@ -130,12 +153,17 @@ def compute_model(**params):
     model.fit(x_train, y_train)
 
     # Список названий оценок, которые будем вычислять:
-    scores_list = [
-        "r2",
-        "accuracy",
-        "homogeneity_score",
-        "neg_mean_absolute_error",
-    ]
+    if do_prediction:
+        # В случае если нужно подготовить предсказние
+        # не будем тратить время и выведем только accuracy:
+        scores_list = ["accuracy"]
+    else:
+        scores_list = [
+            "r2",
+            "accuracy",
+            "homogeneity_score",
+            "neg_mean_absolute_error",
+        ]
 
     # вычислим разные метрики по результатам cross_val_score
     # с использованием подготовленной модели model:
@@ -154,10 +182,21 @@ def compute_model(**params):
         )
         print_and_save_result(one_score, round(mean(scores), 4))
     print("---------------------------------------------")
-
     # Сохраним модель по переданному пути:
     dump(model, save_model_path)
     print(f"Model is saved to {save_model_path}")
+    if do_prediction:
+        x_test, x_ids = \
+            get_datasets(
+                dataset_path=test_data_path,
+                fe_type=fe_type,
+                test_data=True
+            )
+
+        y_test = model.predict(x_test)
+
+        y_pred = pd.DataFrame(y_test, index=x_ids, columns=["Cover_Type"])
+        y_pred.to_csv(predicted_data_path, index_label="Id")
 
 def print_and_save_result(title: str, value: float) -> None:
     print(f"    {title}: {value}")
