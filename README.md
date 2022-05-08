@@ -5,33 +5,33 @@
 
 Данные, на которых осуществляется обучение модели взяты из соревнования "Forest Cover Type Prediction", расположенные по адресу: https://www.kaggle.com/competitions/forest-cover-type-prediction/data
 
-## Описание данных
-The study area includes four wilderness areas located in the Roosevelt National Forest of northern Colorado. Each observation is a 30m x 30m patch. You are asked to predict an integer classification for the forest cover type. The seven types are:
+## Описание данных (скопировано с Kaggle)
+Область исследования включает в себя четыре зоны дикой природы, расположенные в Национальном лесу Рузвельта на севере Колорадо. Каждое наблюдение представляет собой участок размером 30 х 30 м. Вас просят предсказать целочисленную классификацию для типа лесного покрова. Семь типов:
 
-1. Spruce/Fir
-2. Lodgepole Pine
-3. Ponderosa Pine
-4. Cottonwood/Willow
-5. Aspen
-6. Douglas-fir
-7. Krummholz
+1. Ель/Пихта
+2. Сосна скрученная
+3. Сосна жёлтая
+4. Тополь/Ива
+5. Осина
+6. Дугласова пихта
+7. Криволесье
 
-The training set (15120 observations) contains both features and the Cover_Type. The test set contains only the features. You must predict the Cover_Type for every row in the test set (565892 observations).
+Обучающая выборка (15120 наблюдений) содержит как признаки, так и целевой признак (Cover_Type). Тестовая выборка содержит только параметры наблюдений. Вы должны предсказать "Cover_Type" для каждой строки в тестовой выборке (565892 наблюдения).
 
 ### Данные:
-* Elevation - Elevation in meters
-* Aspect - Aspect in degrees azimuth
-* Slope - Slope in degrees
-* Horizontal_Distance_To_Hydrology - Horz Dist to nearest surface water features
-* Vertical_Distance_To_Hydrology - Vert Dist to nearest surface water features
-* Horizontal_Distance_To_Roadways - Horz Dist to nearest roadway
+* Elevation - Высота в метрах
+* Aspect - аспект в градусах азимута
+* Slope - Уклон в градусах
+* Horizontal_Distance_To_Hydrology - Горизонтальное расстояние до ближайших объектов поверхностных вод
+* Vertical_Distance_To_Hydrology - Вертикальное расстояние до ближайших объектов поверхностных вод
+* Horizontal_Distance_To_Roadways - Горизонтальное расстояние до ближайшей дороги
 * Hillshade_9am (0 to 255 index) - Hillshade index at 9am, summer solstice
 * Hillshade_Noon (0 to 255 index) - Hillshade index at noon, summer solstice
 * Hillshade_3pm (0 to 255 index) - Hillshade index at 3pm, summer solstice
-* Horizontal_Distance_To_Fire_Points - Horz Dist to nearest wildfire ignition points
-* Wilderness_Area (4 binary columns, 0 = absence or 1 = presence) - Wilderness area designation
-* Soil_Type (40 binary columns, 0 = absence or 1 = presence) - Soil Type designation
-* Cover_Type (7 types, integers 1 to 7) - Forest Cover Type designation
+* Horizontal_Distance_To_Fire_Points - Горизонтальное расстояние до ближайших точек возгорания лесных пожаров
+* Wilderness_Area (4 binary columns, 0 = absence or 1 = presence) - Обозначение дикой местности
+* Soil_Type (40 binary columns, 0 = absence or 1 = presence) - Обозначение типа почвы
+* Cover_Type (7 types, integers 1 to 7) - Обозначение типа лесного покрова
 
 Для организации command line interface (CLI) использована библиотека click, которая обладает рядом преимуществ:
 * Автоматическое создание справки по параметрам командной строки.
@@ -41,10 +41,53 @@ The training set (15120 observations) contains both features and the Cover_Type.
 * argparse не поддерживает отключение перемежающихся аргументов. Без этой функции невозможно безопасно реализовать вложенный синтаксический анализ, например как в click.
 
 ***
-Для заданий №8 необходимо вложить скрин результатов работы:
+Использованы следующие модели (алгоритмы) машинного обучения:
+1. RandomForestClassifier
+1. KNeighborsClassifier
+1. C-Support Vector Classification
+
+***
+Для обработки данных использовно четыре варианта, каждый из которых выбирается через параметр командной строки:
+Вариант 0: Исходные данные без каких-либо модификаций (--fe-type 0)
+Вариант 1: Созданы столбцы представляющие из себя степени от 2 до 4 относительно всех исходных и доволнительно создано несколько столбцов, представляющих собой суммы от исходных (--fe-type 1)
+Вариант 2: Произведено уменьшение размерности до 50 компонент с использованием PCA из sklearn.decomposition (--fe-type 2)
+Вариант 3: Комбинация вариантов 1 и 2 (--fe-type 3)
+
+***
+Для оценки результаов работы моделей использованы следующие метрики из библиотеки sklearn.metrics:
+1. r2
+1. accuracy (основная метрика),
+1. homogeneity_score
+1. rand_score
+
+***
+Вы соответствии с заданием №8 необходимо вложить скрин следющих результатов работы:
 * Три разных набора гиперпараметров для каждой модели (представлены по четыре - один из них параметры по умолчанию).
 * Два разных метода разработки признаков для каждой модели (представлено 4 - один из них данные без обработки).
-* Две разные модели ML (представлены три: rfc = RandomForestClassifier, knn = KNeighborsClassifier, svc = C-Support Vector Classification)
-
+* Две разные модели ML (представлены три: rfc = RandomForestClassifier, knn = KNeighborsClassifier, svc = C-Support Vector Classification).
+Соответствующий скрин приведён ниже:
 ![MLFlow](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/Experiments.PNG?raw=true)
 
+***
+Задание №9 требут применить вместо ручной настройки гиперпараметров автоматический поиск гиперпараметров для каждой модели.
+Введён параметр --nested-cv, который по умолчанию равен False и используется функциональность задания №7, а если этот параметр установлен в значение False, то функциональность задания №9.
+При этом в результате работы этого блока кода:
+1. для каждой из трёх моделей используется своя сетка подбора параметров с использованием GridSearchCV (отображается на экране во время исполнения кода);
+1. производится расчет каждой из выбранных метрик (отображается на экране);
+1. по сетке вычисляется лучшая модель (на экране отображаются параметры подобранные для лучшей модели);
+1. используя лучшую модель, формируется предсказание на всём наборе данных и для сравнения расчитываются те же выбранные метрики (отображается на экране);
+1. используя лучшую модель, производится расчет по принципам задания №7 (значения вычестленных метрик выводятся на экран, а также производится сохранение результатов в MLFlow.
+***
+Ниже представлены изображения экранов отработавших алгоритмов:
+
+
+#### RandomForestClassifier:
+![MLFlow](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/rfc.PNG?raw=true)
+***
+
+#### KNeighborsClassifier:
+![MLFlow](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/knn.PNG?raw=true)
+***
+
+#### C-Support Vector Classification:
+![MLFlow](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/svc.PNG?raw=true)
