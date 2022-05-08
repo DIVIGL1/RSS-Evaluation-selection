@@ -12,6 +12,7 @@ def create_pipeline(
     **params,
 ) -> Pipeline:
 
+    print("Scalling used:", use_scaler)
     pipeline_steps = []
     if use_scaler:
         step = ("scaler", StandardScaler())

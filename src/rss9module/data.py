@@ -9,7 +9,7 @@ def get_datasets(
     dataset_path: Path = Path("data/train.csv"),
     fe_type: int = 0,
     test_data: bool = False
-) -> Tuple[pd.DataFrame, pd.Series]:
+) -> (Tuple[pd.DataFrame, pd.Series]):
 
     dataset = pd.read_csv(dataset_path)
     if test_data:
@@ -28,29 +28,33 @@ def get_datasets(
         )
     else:
         if fe_type == 1:
+            degree = 4
             print(
                 "Feature engineering techniques type 1",
-                "(Added degrees (2-4) and new columns)."
+                f"(Added degrees (from 2 to {degree}) and new columns)."
             )
-            fe_by_hans(dataset, degree=4)
+            fe_by_hans(dataset, degree=degree)
 
         elif fe_type == 2:
+            n_components = 50
             print(
                 "Feature engineering techniques type 2",
-                "(Used original data and PCA with n_components=50)."
+                "(Used original data and PCA.",
+                f"(with n_components={n_components})."
             )
             target = dataset["Cover_Type"]
             dataset.drop("Cover_Type", inplace=True, axis=1)
 
-            dataset = pca_df(dataset, n_components=50)
+            dataset = pca_df(dataset, n_components=n_components)
 
         elif fe_type == 3:
+            degree = 3
             print(
                 "Feature engineering techniques type 3",
-                "(Added degrees (2-3) and new columns",
+                f"(Added degrees (from 2 to {degree}) and new columns",
                 "and used PCA with n_components=50)."
             )
-            fe_by_hans(dataset, degree=3, nodrop=True)
+            fe_by_hans(dataset, degree=degree, nodrop=True)
 
             target = dataset["Cover_Type"]
             dataset.drop("Cover_Type", inplace=True, axis=1)
