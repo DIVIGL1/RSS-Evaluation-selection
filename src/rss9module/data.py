@@ -8,7 +8,7 @@ import pandas as pd
 def get_datasets(
     dataset_path: Path = Path("data/train.csv"),
     fe_type: int = 0,
-    test_data: bool = False
+    test_data: bool = False,
 ) -> (Tuple[pd.DataFrame, pd.Series]):
 
     dataset = pd.read_csv(dataset_path)
@@ -23,15 +23,13 @@ def get_datasets(
 
     print(f"Original dataset size: {dataset.shape}.")
     if fe_type == 0:
-        print(
-            "No feature engineering techniques (Used original data)."
-        )
+        print("No feature engineering techniques (Used original data).")
     else:
         if fe_type == 1:
             degree = 4
             print(
                 "Feature engineering techniques type 1",
-                f"(Added degrees (from 2 to {degree}) and new columns)."
+                f"(Added degrees (from 2 to {degree}) and new columns).",
             )
             fe_by_hans(dataset, degree=degree)
 
@@ -40,7 +38,7 @@ def get_datasets(
             print(
                 "Feature engineering techniques type 2",
                 "(Used original data and PCA.",
-                f"(with n_components={n_components})."
+                f"(with n_components={n_components}).",
             )
             target = dataset["Cover_Type"]
             dataset.drop("Cover_Type", inplace=True, axis=1)
@@ -52,7 +50,7 @@ def get_datasets(
             print(
                 "Feature engineering techniques type 3",
                 f"(Added degrees (from 2 to {degree}) and new columns",
-                "and used PCA with n_components=50)."
+                "and used PCA with n_components=50).",
             )
             fe_by_hans(dataset, degree=degree, nodrop=True)
 
@@ -71,14 +69,13 @@ def get_datasets(
 
     return (features, (target if not test_data else x_id))
 
+
 def pca_df(dataset: pd.DataFrame, n_components=2) -> None:
-    pca = PCA(
-        n_components=n_components,
-        svd_solver='randomized',
-        whiten=True
-    ).fit(dataset)
+    pca = PCA(n_components=n_components, svd_solver="randomized", whiten=True)
+    pca.fit(dataset)
     dataset = pd.DataFrame(pca.transform(dataset))
-    return (dataset)
+    return dataset
+
 
 def fe_by_hans(dataset: pd.DataFrame, degree=4, nodrop=False) -> None:
     columns = [
@@ -93,9 +90,7 @@ def fe_by_hans(dataset: pd.DataFrame, degree=4, nodrop=False) -> None:
         for num in range(2, degree + 1):
             dataset[one_col + "_" + str(num)] = dataset[one_col] ** num
 
-    dataset["Dist"] =\
-        dataset["Horizontal_Distance_To_Roadways"] +\
-        dataset["Horizontal_Distance_To_Fire_Points"]
+    dataset["Dist"] = dataset[columns[4]] + dataset[columns[5]]
 
     dataset["Soil_Type_sum"] = 0
     for soil_num in range(1, 41):
@@ -104,5 +99,6 @@ def fe_by_hans(dataset: pd.DataFrame, degree=4, nodrop=False) -> None:
         if not nodrop:
             dataset.drop(colname, inplace=True, axis=1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     data = get_datasets(Path("data/train.csv"), 42, 0.2)

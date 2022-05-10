@@ -5,12 +5,13 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
+
 def create_pipeline(
     model_type: str = "rfc",
     use_scaler: bool = True,
     random_state: int = 42,
     **params,
-) -> Pipeline:
+) -> (Pipeline):
 
     print("Scalling used:", use_scaler)
     pipeline_steps = []
@@ -19,18 +20,18 @@ def create_pipeline(
         pipeline_steps.append(step)
 
     if model_type == "rfc":
-        step = (
-            "rfc",
-            RandomForestClassifier(
-                n_jobs=-1,
-                random_state=random_state,
-                **params
-            )
+        estimater = RandomForestClassifier(
+            n_jobs=-1, random_state=random_state, **params
         )
+        stepname = "rfc"
     elif model_type == "knn":
-        step = ("knn", KNeighborsClassifier(n_jobs=-1, **params))
+        estimater = KNeighborsClassifier(n_jobs=-1, **params)
+        stepname = "knn"
     elif model_type == "svc":
-        step = ("svc", SVC(random_state=random_state, **params))
+        estimater = SVC(random_state=random_state, **params)
+        stepname = "svc"
+
+    step = (stepname, estimater)
 
     pipeline_steps.append(step)
 
