@@ -1,6 +1,7 @@
 import datetime
 from pathlib import Path
 from typing import Dict, List, Any
+import sys
 
 import click
 import mlflow
@@ -28,14 +29,14 @@ from .pipeline import create_pipeline
     "-t",
     "--test-data-path",
     default="data/test.csv",
-    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
     show_default=True,
 )
 @click.option(
     "-p",
     "--predicted-data-path",
     default="data/submission.csv",
-    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+    type=click.Path(dir_okay=False, path_type=Path),
     show_default=True,
 )
 @click.option(
@@ -47,22 +48,51 @@ from .pipeline import create_pipeline
 )
 @click.option("--do-prediction", default=False, type=bool, show_default=True)
 @click.option("--without-preffix", default=False, type=bool, show_default=True)
-@click.option("--model-type", default="rfc", type=str, show_default=True)
-@click.option("--fe-type", default=0, type=int, show_default=True)
+@click.option(
+    "--model-type",
+    default="rfc",
+    type=click.Choice(["rfc", "knn", "svc"]),
+    show_default=True,
+)
+@click.option("--fe-type", default=0, type=click.IntRange(0, 4), show_default=True)
 @click.option("--nested-cv", default=False, type=bool, show_default=True)
-@click.option("--random-state", default=42, type=int, show_default=True)
+@click.option("--random-state", default=42, type=click.IntRange(0), show_default=True)
 @click.option("--use-scaler", default=True, type=bool, show_default=True)
-@click.option("--n-estimators", default=None, type=int, show_default=True)
-@click.option("--criterion", default=None, type=str, show_default=True)
-@click.option("--max-depth", default=None, type=int, show_default=True)
-@click.option("--max-features", default=None, type=str, show_default=True)
-@click.option("--n-neighbors", default=None, type=int, show_default=True)
-@click.option("--weights", default=None, type=str, show_default=True)
-@click.option("--algorithm", default=None, type=str, show_default=True)
-@click.option("--c-param", default=None, type=float, show_default=True)
-@click.option("--kernel", default=None, type=str, show_default=True)
+@click.option("--n-estimators", default=None, type=click.IntRange(1), show_default=True)
+@click.option(
+    "--criterion",
+    default=None,
+    type=click.Choice(["gini", "entropy"]),
+    show_default=True,
+)
+@click.option("--max-depth", default=None, type=click.IntRange(1), show_default=True)
+@click.option(
+    "--max-features",
+    default=None,
+    type=click.Choice(["auto", "sqrt", "log2"]),
+    show_default=True,
+)
+@click.option("--n-neighbors", default=None, type=click.IntRange(1), show_default=True)
+@click.option(
+    "--weights",
+    default=None,
+    type=click.Choice(["distance", "uniform"]),
+    show_default=True,
+)
+@click.option(
+    "--algorithm",
+    default=None,
+    type=click.Choice(["auto", "ball_tree", "kd_tree", "brute"]),
+    show_default=True,
+)
+@click.option(
+    "--c-param", default=None, type=click.FloatRange(0.000001), show_default=True
+)
+@click.option(
+    "--kernel", default=None, type=click.Choice(["rbf", "poly"]), show_default=True
+)
 @click.option("--shrinking", default=None, type=bool, show_default=True)
-@click.option("--tol", default=None, type=float, show_default=True)
+@click.option("--tol", default=None, type=click.FloatRange(0.000001), show_default=True)
 def train(
     dataset_path: Path,
     test_data_path: Path,
@@ -87,6 +117,28 @@ def train(
     shrinking: bool,
     tol: float,
 ) -> (None):
+
+    # Проверим на наличие папки:
+    if not save_model_path.parent.is_dir():
+        print(f"Missing directory to save models: {save_model_path.parent}")
+        sys.exit(5)
+
+    if not predicted_data_path.parent.is_dir():
+        print(f"Missing directory to save predictions: {predicted_data_path.parent}")
+        sys.exit(5)
+
+    # Проверим на отсутствие лишних символов в имени файла:
+    tested_file_name = predicted_data_path.stem + predicted_data_path.suffix
+    for one_char in '*?:"<>|+!@%':
+        if one_char in tested_file_name:
+            print(f"Incorrect symbol in predictions's filename: {one_char}")
+            sys.exit(5)
+
+    tested_file_name = save_model_path.stem + save_model_path.suffix
+    for one_char in '*?:"<>|+!@%':
+        if one_char in tested_file_name:
+            print(f"Incorrect symbol in models's filename: {one_char}")
+            sys.exit(5)
 
     runname = model_type + ": fe=" + str(fe_type)
     print(runname)
@@ -214,8 +266,11 @@ def compute_model(
             save_model_path.parent,
             preffix + save_model_path.stem + save_model_path.suffix,
         )
-        filename = preffix + test_data_path.stem + test_data_path.suffix
-        test_data_path = Path(test_data_path.parent, filename)
+        predicted_data_path = Path(
+            predicted_data_path.parent,
+            preffix + predicted_data_path.stem + predicted_data_path.suffix,
+        )
+
     dump(mlmodel, save_model_path)
     print(f"Model is saved to {save_model_path}")
 
@@ -227,14 +282,8 @@ def compute_model(
         )
 
         y_test = mlmodel.predict(x_test)
-
         y_pred = pd.DataFrame(y_test, index=x_ids, columns=["Cover_Type"])
-
-        save_prediction_path = Path(
-            predicted_data_path.parent,
-            preffix + predicted_data_path.stem + predicted_data_path.suffix,
-        )
-        y_pred.to_csv(save_prediction_path, index_label="Id")
+        y_pred.to_csv(predicted_data_path, index_label="Id")
 
 
 def nested_cross_validation(
@@ -364,7 +413,7 @@ def nested_cross_validation(
     else:
         pass
     # Вычисление оценок по требованиям задания №7:
-    not_nested_cross_validation(
+    mlmodel = not_nested_cross_validation(
         mlmodel=mlmodel,
         X=X,
         y=y,
@@ -402,6 +451,16 @@ def not_nested_cross_validation(
         scores = cross_val_score(mlmodel, X, y, scoring=one_score, cv=cv, n_jobs=-1)
         print_and_save_result(one_score, round(mean(scores), 4))
     print("--------------------------------------------------------")
+
+    # Тут важно понять, что все манипуляции с моеделью,
+    # которые мы до этого делали, все они проводились
+    # на части данных и теперь перед сохранением модели
+    # её надо обучить на всех данных. Если этого не сделать,
+    # то в последствии, восстановив её из файла, мы
+    # не сможем её (модель) сразу использовать, так
+    # как потребуется сделать fit.
+    mlmodel.fit(X, y)
+
     return mlmodel
 
 
