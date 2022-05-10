@@ -200,11 +200,11 @@ git clone https://github.com/DIVIGL1/data.git
 <h3 id="g13">Аннотация типов в коде</h2>
 Все реализованные в коде методы снабжены аннотациями типов и правильно используются во всем коде. Проверка осуществена с помощью mypy и пройдена успешно. Это видно на следующем скрине:
 
-![mypy](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/mypy.png?raw=true)
+![mypy](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/mypy.PNG?raw=true)
 
 <h3 id="g14">Проверка всего подготовленного пакета одной командой</h2>
 Все предыдущие проверки можно объединить и выполнить одной командой (nox).
 
 В конфигурационнойм файле noxfile.py прописаны все необходимые сессии для осуществления проверки. Процесс проверки изобращён на следующем скрине:
 
-![mypy](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/nox.png?raw=true)
+![nox](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/nox.PNG?raw=true)
