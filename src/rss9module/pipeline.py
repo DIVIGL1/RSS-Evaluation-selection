@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
@@ -10,7 +12,7 @@ def create_pipeline(
     model_type: str = "rfc",
     use_scaler: bool = True,
     random_state: int = 42,
-    **params,
+    **params: Dict[Any, Any],
 ) -> (Pipeline):
 
     print("Scalling used:", use_scaler)

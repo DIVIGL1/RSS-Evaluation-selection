@@ -1,18 +1,15 @@
+import datetime
 from pathlib import Path
+from typing import Dict, List, Any
 
 import click
 import mlflow
 import mlflow.sklearn
+import pandas as pd
 from joblib import dump
 from numpy import mean
-import datetime
-from sklearn.model_selection import KFold, cross_val_score
-import pandas as pd
-from sklearn.model_selection import GridSearchCV
-from typing import Dict
-from sklearn.metrics import accuracy_score, r2_score
-from sklearn.metrics import homogeneity_score
-from sklearn.metrics import rand_score
+from sklearn.metrics import accuracy_score, homogeneity_score, r2_score, rand_score
+from sklearn.model_selection import GridSearchCV, KFold, cross_val_score
 from sklearn.pipeline import Pipeline
 
 from .data import get_datasets
@@ -135,18 +132,18 @@ def train(
 
 
 def compute_model(
-    dataset_path,
-    test_data_path,
-    predicted_data_path,
-    save_model_path,
-    without_preffix,
-    do_prediction,
-    model_type,
-    fe_type,
-    nested_cv,
-    random_state,
-    use_scaler,
-    **params,
+    dataset_path: Path,
+    test_data_path: Path,
+    predicted_data_path: Path,
+    save_model_path: Path,
+    without_preffix: bool,
+    do_prediction: bool,
+    model_type: str,
+    fe_type: int,
+    nested_cv: bool,
+    random_state: int,
+    use_scaler: bool,
+    **params: Any,
 ) -> (None):
 
     # Получим тренировочный набор данных
@@ -232,11 +229,23 @@ def compute_model(
         y_test = mlmodel.predict(x_test)
 
         y_pred = pd.DataFrame(y_test, index=x_ids, columns=["Cover_Type"])
-        y_pred.to_csv(preffix + predicted_data_path, index_label="Id")
+
+        save_prediction_path = Path(
+            predicted_data_path.parent,
+            preffix + predicted_data_path.stem + predicted_data_path.suffix,
+        )
+        y_pred.to_csv(save_prediction_path, index_label="Id")
 
 
 def nested_cross_validation(
-    nested_cv, mlmodel, X, y, model_type, random_state, scores_list, **params
+    nested_cv: bool,
+    mlmodel: Pipeline,
+    X: pd.DataFrame,
+    y: pd.Series,
+    model_type: str,
+    random_state: int,
+    scores_list: List[Any],
+    **params: Dict[Any, Any],
 ) -> (Pipeline):
     """
     В соответствии с заданием №9 требуется реализация nested cross-validation.
@@ -267,7 +276,7 @@ def nested_cross_validation(
         grid_space_pipe = rename_params(model_type, grid_space)
 
         # Создаём пустой список для хранения в нём оценок:
-        outer_results = {key: [] for key in scores_list[0]}
+        outer_results: Dict[str, Any] = {key: [] for key in scores_list[0]}
         max_scorr = float("-inf")
         found_best_params = {}
         # Найдём какая метрика является контрольной:
@@ -277,11 +286,7 @@ def nested_cross_validation(
 
         # Настраиваем внешнюю процедуру для кросс-валидации:
 
-        cv_outer = KFold(
-            n_splits=3,
-            shuffle=True,
-            random_state=random_state + 1
-        )
+        cv_outer = KFold(n_splits=3, shuffle=True, random_state=random_state + 1)
         X_array = X.to_numpy()
 
         for train_ix, test_ix in cv_outer.split(X_array):
@@ -289,11 +294,7 @@ def nested_cross_validation(
             X_train, X_test = X_array[train_ix, :], X_array[test_ix, :]
             y_train, y_test = y[train_ix], y[test_ix]
             # Настраиваем внутреннюю процедуру для кросс-валидации:
-            cv_inner = KFold(
-                n_splits=3,
-                shuffle=True,
-                random_state=random_state + 2
-            )
+            cv_inner = KFold(n_splits=3, shuffle=True, random_state=random_state + 2)
 
             # Создадим GridSearchCV и выполним поиск по выбранной сетке:
             gscv = GridSearchCV(
@@ -349,8 +350,7 @@ def nested_cross_validation(
         print("- Compute metrics on whole data using best model -")
         # Посчитаем метрики на всём датасете с её помощью best_model_:
         y_whole_prediction = inner_best_mlmodel.predict(X_array)
-        for one_score_name, one_score_func in\
-                zip(scores_list[0], scores_list[1]):
+        for one_score_name, one_score_func in zip(scores_list[0], scores_list[1]):
             scope_whole_value = one_score_func(y, y_whole_prediction)
             scope_whole_value = round(scope_whole_value, 4)
             print(f" {one_score_name}:", scope_whole_value)
@@ -377,7 +377,12 @@ def nested_cross_validation(
 
 
 def not_nested_cross_validation(
-    mlmodel, X, y, random_state, scores_list, **params
+    mlmodel: Pipeline,
+    X: pd.DataFrame,
+    y: pd.Series,
+    random_state: int,
+    scores_list: List[str],
+    **params: Dict[Any, Any],
 ) -> (Pipeline):
     """
     В соответствии с заданием №7 требуется реализация K-fold cross-validation.
@@ -394,14 +399,7 @@ def not_nested_cross_validation(
     print("Value of selected metrics:")
 
     for one_score in scores_list:
-        scores = cross_val_score(
-            mlmodel,
-            X,
-            y,
-            scoring=one_score,
-            cv=cv,
-            n_jobs=-1
-        )
+        scores = cross_val_score(mlmodel, X, y, scoring=one_score, cv=cv, n_jobs=-1)
         print_and_save_result(one_score, round(mean(scores), 4))
     print("--------------------------------------------------------")
     return mlmodel
@@ -413,10 +411,8 @@ def print_and_save_result(title: str, value: float) -> (None):
 
 
 def rename_params(
-    model_type: str,
-    in_dict: Dict,
-    use_for="gscv+pipe"
-) -> (Dict):
+    model_type: str, in_dict: Dict[Any, Any], use_for: str = "gscv+pipe"
+) -> (Dict[Any, Any]):
     """
     Преобразование словаря с параметрами, для того чтобы его можно
     было использовать в GridSearchCV с pipeline, то есть к имени каждого
@@ -429,7 +425,7 @@ def rename_params(
         if use_for == "gscv+pipe":
             new_key = model_type + "__" + one_key
         else:
-            new_key = one_key[len(model_type + "__"):]
+            new_key = one_key[len(model_type + "__") :]
         out_dict[new_key] = out_dict[one_key]
         out_dict.pop(one_key)
 

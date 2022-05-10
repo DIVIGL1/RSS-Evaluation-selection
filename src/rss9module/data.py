@@ -70,14 +70,15 @@ def get_datasets(
     return (features, (target if not test_data else x_id))
 
 
-def pca_df(dataset: pd.DataFrame, n_components=2) -> None:
+def pca_df(dataset: pd.DataFrame, n_components: int = 2) -> (pd.DataFrame):
+
     pca = PCA(n_components=n_components, svd_solver="randomized", whiten=True)
     pca.fit(dataset)
     dataset = pd.DataFrame(pca.transform(dataset))
     return dataset
 
 
-def fe_by_hans(dataset: pd.DataFrame, degree=4, nodrop=False) -> None:
+def fe_by_hans(dataset: pd.DataFrame, degree: int = 4, nodrop: bool = False) -> (None):
     columns = [
         "Elevation",
         "Slope",
@@ -101,4 +102,4 @@ def fe_by_hans(dataset: pd.DataFrame, degree=4, nodrop=False) -> None:
 
 
 if __name__ == "__main__":
-    data = get_datasets(Path("data/train.csv"), 42, 0.2)
+    data = get_datasets(Path("data/train.csv"), 42)
