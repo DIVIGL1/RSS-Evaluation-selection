@@ -27,4 +27,4 @@ def mypy(session: Any) -> (None):
 
 @nox.session
 def tests(session: Any) -> (None):
-    pass
+    session.run("pytest", external=True)

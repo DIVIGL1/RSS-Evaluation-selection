@@ -5,6 +5,7 @@
 .env_*
 __pycache__/*.*
 .nox/*
+.mypy_cache/*
 
 # Ignore temporary files
 ~_tmp_*.*
