@@ -4,6 +4,7 @@
 .vscode/*
 .env_*
 __pycache__/*.*
+.nox/*
 
 # Ignore temporary files
 ~_tmp_*.*
