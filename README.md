@@ -10,13 +10,13 @@
 1. <a href="#g7">Метрики использованные для оценки моделей</a>
 1. <a href="#g8">Применение MLFlow для сохранения результатов работы пакета</a>
 1. <a href="#g9">Обычный и nested варианты Cross-validation и подбор гиперпараметров</a>
+1. <a href="#g12">Форматирование кода в проекте</a>
 
 ***
 <h3 id="g1">Общее описание задачи</h2>
-Задача прогнозирования типа лесного покрова, используемая в качестве соревнования с другими участниками.
-Задача является домашним заданием 9-го модуля курса RSSchool.
+Задача прогнозирования типа лесного покрова (Forest Cover Type Prediction), используемая в качестве соревнования с другими участниками, взята с площадке kaggle (описание здесь: https://www.kaggle.com/competitions/forest-cover-type-prediction/overview).
 
-#### Данный пакет позволяет:
+#### Представленный здесь пакет позволяет:
 
 * проводить обучение нескольких алгоритмов машинного обучения;
 * делать выбор из нескольких вариантов подготовки данных;
@@ -24,7 +24,7 @@
 * сохранять модель по результатам обучения и результаты оценок работы этой модели;
 * формировать прогоноз.
 
-Данные, на которых осуществляется обучение модели взяты из соревнования "Forest Cover Type Prediction", расположенные по адресу: https://www.kaggle.com/competitions/forest-cover-type-prediction/data
+Данные, на которых осуществляется обучение модели, расположенны по адресу: https://www.kaggle.com/competitions/forest-cover-type-prediction/data
 
 ***
 <h3 id="g2">Описание данных</h2>
@@ -73,7 +73,7 @@
 
 Как результат, структура каталогов будет выглядить примерно следующим образом:
 
-![DirTree](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/DirTree.PNG?raw=true)
+![DirTree](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/DirTree.PNG?raw=true)
 
 #### Автоматизация установки
 Для упрощения процесса установки можно создать файлы со скриптами, как это показано ниже.
@@ -148,7 +148,7 @@ git clone https://github.com/DIVIGL1/data.git
 * Разные методы разработки признаков для каждой модели (представлено 4 - один из них данные без обработки).
 * Разные модели ML (представлены три: <b>rfc = RandomForestClassifier, knn = KNeighborsClassifier, svc = C-Support Vector Classification)</b>.
 
-![MLFlow](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/Experiments.PNG?raw=true)
+![MLFlow](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/Experiments.PNG?raw=true)
 
 #### Обратите внимание: В данный пакет входят два файла для запуска из командной строки (examples.bat и examples.sh) позволяющие Вам получить представленные результаты после инсталляции пакета.
 
@@ -172,13 +172,25 @@ git clone https://github.com/DIVIGL1/data.git
 
 
 #### RandomForestClassifier:
-![MLFlow](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/rfc.PNG?raw=true)
+![RandomForestClassifier](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/rfc.PNG?raw=true)
 ***
 
 #### KNeighborsClassifier:
-![MLFlow](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/knn.PNG?raw=true)
+![KNeighborsClassifier](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/knn.PNG?raw=true)
 ***
 
 #### C-Support Vector Classification:
-![MLFlow](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/svc.PNG?raw=true)
-	
+![C-Support Vector Classification](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/svc.PNG?raw=true)
+
+<h3 id="g12">Форматирование кода в проекте</h2>
+Приформатировании кода использовалась утилита black, которая внесла изменение в некоторые файлы. Это видно на следующем скрине:
+
+![AfterBlack](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/AfterBlack.PNG?raw=true)
+
+После обработки кода утилитой black, потребовалось лополнительно подкорректировать полученный результат, чтобы избавиться от предупреждейний выданных flake8. Все замечания были связаны с длинной строки:
+
+![flake8](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/flake8.PNG?raw=true)
+
+Замечания от flake8 были устранены:
+
+![Afterflake8](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/Afterflake8.PNG?raw=true)
