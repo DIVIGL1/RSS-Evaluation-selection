@@ -185,9 +185,9 @@ git clone https://github.com/DIVIGL1/data.git
 <h3 id="g12">Форматирование кода в проекте</h2>
 Приформатировании кода использовалась утилита black, которая внесла изменение в некоторые файлы. Это видно на следующем скрине:
 
-![AfterBlack](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/AfterBlack.PNG?raw=true)
+![AfterBlack](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/AfterBlack.png?raw=true)
 
-После обработки кода утилитой black, потребовалось лополнительно подкорректировать полученный результат, чтобы избавиться от предупреждейний выданных flake8. Все замечания были связаны с длинной строки:
+После обработки кода утилитой black, потребовалось дополнительно подкорректировать полученный результат, чтобы избавиться от предупреждейний выданных flake8. Все замечания были связаны с длинной строки:
 
 ![flake8](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/flake8.PNG?raw=true)
 
