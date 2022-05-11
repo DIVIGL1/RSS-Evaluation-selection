@@ -208,7 +208,8 @@ git clone https://github.com/DIVIGL1/data.git
 <h3 id="g10">10. Один полный пример запуска из коммандной строки</h3>
 Для полноценной демонстрации функциональности пакета приводим здесь вариант запуска:
 
-poetry run train --dataset-path data/train.csv --test-data-path data/test.csv --do-prediction True --predicted-data-path data/submission.csv --save-model-path data/model.joblib --fe-type 3 --model-type "rfc" --n-estimators 10 --criterion "entropy" --max-features "sqrt"
+
+<b>poetry run train --dataset-path data/train.csv --test-data-path data/test.csv --do-prediction True --predicted-data-path data/submission.csv --save-model-path data/model.joblib --fe-type 3 --model-type "rfc" --n-estimators 10 --criterion "entropy" --max-features "sqrt"</b>
 
 (этот код реализован и сохранён в файлах one_full_example.bat и one_full_example.sh, которые размещены в репозитории)
 
@@ -298,7 +299,7 @@ poetry run train --dataset-path data/train.csv --test-data-path data/test.csv --
 
 ***
 <h3 id="g14">14. Проверка всего подготовленного пакета вызовом одной команды</h3>
-Все предыдущие проверки можно объединить и выполнить одной командой (nox).
+Все предыдущие проверки можно объединить и выполнить одной командой (через утилиту nox).
 
 В конфигурационном файле noxfile.py прописаны все необходимые сессии для осуществления проверки. Процесс проверки изображён на следующем скрине:
 
