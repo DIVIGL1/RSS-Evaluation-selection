@@ -24,6 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install poetry
+        poetry install
     - name: nox
       run: |
         poetry run nox
