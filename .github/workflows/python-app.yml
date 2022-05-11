@@ -23,8 +23,7 @@ jobs:
         python-version: "3.9"
     - name: Install dependencies
       run: |
-        ls -la
         pip install poetry
-    - name: mypy
+    - name: nox
       run: |
-        mypy
+        poetry run nox
