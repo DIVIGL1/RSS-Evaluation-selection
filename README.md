@@ -254,5 +254,6 @@ git clone https://github.com/DIVIGL1/data.git
 
 ![ci/cd](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/ci_cd.png?raw=true)
 
-Аниже результат работы на github:
+А ниже результат работы на github:
 
+![ci_cd_github](https://github.com/DIVIGL1/RSS-Evaluation-selection/blob/main/picts/ci_cd_github.PNG?raw=true)
