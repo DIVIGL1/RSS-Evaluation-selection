@@ -63,13 +63,13 @@ def test_enable_to_save_models(runner: CliRunner) -> (None):
     dirname = "z:/:/:///"
     # Прверка на наличие каталога:
     result = runner.invoke(train, ["--save-model-path", f"zd:/{dirname}/"])
-    assert result.exit_code == 5
+    assert result.exit_code in [2, 5]
     assert "Missing directory to save models:" in result.output
 
     filename = "@<>!"
     # Прверка на наличие каталога:
     result = runner.invoke(train, ["--save-model-path", filename])
-    assert result.exit_code == 5
+    assert result.exit_code in [2, 5]
     assert "Incorrect symbol in models's filename" in result.output
 
 
@@ -80,13 +80,13 @@ def test_enable_to_save_prediction(runner: CliRunner) -> (None):
     dirname = "z:/:/:///"
     # Прверка на наличие каталога:
     result = runner.invoke(train, ["--predicted-data-path", f"zd:/{dirname}/"])
-    assert result.exit_code == 5
+    assert result.exit_code in [2, 5]
     assert "Missing directory to save predictions:" in result.output
 
     filename = "@<>!"
     # Прверка на наличие каталога:
     result = runner.invoke(train, ["--predicted-data-path", filename])
-    assert result.exit_code == 5
+    assert result.exit_code in [2, 5]
     assert "Incorrect symbol in predictions's filename" in result.output
 
 
