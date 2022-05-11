@@ -24,6 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        cd "RSS-Evaluation-selection"
         pip install poetry
     - name: mypy
       run: |
