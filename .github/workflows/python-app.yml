@@ -23,7 +23,7 @@ jobs:
         python-version: "3.9"
     - name: Install dependencies
       run: |
-        cd "RSS-Evaluation-selection"
+        ls -la
         pip install poetry
     - name: mypy
       run: |
