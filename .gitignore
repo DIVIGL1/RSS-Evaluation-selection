@@ -11,6 +11,7 @@ __pycache__/*.*
 ~_tmp_*.*
 _tmp_*.*
 _local_*.*
+*.txt
 
 # Ignore the data directory and single data files:
 data
